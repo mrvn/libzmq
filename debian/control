@@ -1,0 +1,57 @@
+Source: zeromq
+Section: libs
+Priority: optional
+Maintainer: Alessandro Ghedini <ghedo@debian.org>
+Build-Depends: debhelper (>= 9),
+ autotools-dev,
+ libpgm-dev,
+ pkg-config
+Standards-Version: 3.9.4
+Homepage: http://www.zeromq.org/
+
+Package: libzmq3
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Multi-Arch: same
+Description: lightweight messaging kernel (shared library)
+ ØMQ is a library which extends the standard socket interfaces with features
+ traditionally provided by specialised messaging middleware products.
+ .
+ ØMQ sockets provide an abstraction of asynchronous message queues, multiple
+ messaging patterns, message filtering (subscriptions), seamless access to
+ multiple transport protocols and more.
+ .
+ This package contains the ZeroMQ shared library (version 4.0).
+
+Package: libzmq3-dev
+Architecture: any
+Section: libdevel
+Depends: libzmq3 (= ${binary:Version}), ${misc:Depends}
+Conflicts: libzmq-dev
+Multi-Arch: same
+Description: lightweight messaging kernel (development files)
+ ØMQ is a library which extends the standard socket interfaces with features
+ traditionally provided by specialised messaging middleware products.
+ .
+ ØMQ sockets provide an abstraction of asynchronous message queues, multiple
+ messaging patterns, message filtering (subscriptions), seamless access to
+ multiple transport protocols and more.
+ .
+ This package contains the ZeroMQ development libraries and header files.
+
+Package: libzmq3-dbg
+Architecture: any
+Priority: extra
+Section: debug
+Depends: libzmq3 (= ${binary:Version}), ${misc:Depends}
+Multi-Arch: same
+Description: lightweight messaging kernel (debugging symbols)
+ ØMQ is a library which extends the standard socket interfaces with features
+ traditionally provided by specialised messaging middleware products.
+ .
+ ØMQ sockets provide an abstraction of asynchronous message queues, multiple
+ messaging patterns, message filtering (subscriptions), seamless access to
+ multiple transport protocols and more.
+ .
+ This package contains the debugging synmbols for the ZeroMQ library.

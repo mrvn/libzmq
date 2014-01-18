@@ -1,0 +1,11 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with=autotools-dev
+
+override_dh_auto_configure:
+	./autogen.sh
+	dh_auto_configure -- --with-system-pgm
+
+override_dh_strip:
+	dh_strip --dbg-package=libzmq3-dbg
