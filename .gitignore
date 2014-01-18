@@ -128,3 +128,11 @@ zeromq-*.tar.gz
 zeromq-*.zip
 core
 build
+debian/files
+debian/*.substvars
+debian/*.debhelper
+debian/*.log
+debian/libzmq3-dbg
+debian/libzmq3-dev
+debian/libzmq3
+debian/tmp
