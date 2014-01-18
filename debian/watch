@@ -1,0 +1,5 @@
+version=3
+
+options=dversionmangle=s/\+dfsg// \
+http://download.zeromq.org/zeromq-(3.*)\.tar\.gz \
+debian sh debian/repack.stub
