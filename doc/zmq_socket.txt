@@ -351,7 +351,7 @@ EAGAIN error.
 
 Since a 'ZMQ_STREAM' socket only generates a message when data was received
 there can never be an actual message with zero payload. Instead messages with
-zero payload are used to notify the socket of connections and disconnections
+zero payload are used to notify the socket of connection and disconnection
 of peers. In both cases a message is received with the _identity_ of the
 involved peer as first frame and an empty second frame. It is the job of the
 application to track each _identity_ to distinguish between connections and
