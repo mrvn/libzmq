@@ -340,31 +340,40 @@ non-0MQ peer, when using the tcp:// transport. A 'ZMQ_STREAM' socket can
 act as client and/or server, sending and/or receiving TCP data asynchronously.
 
 When receiving TCP data, a 'ZMQ_STREAM' socket shall prepend a message part
-containing the _identity_ of the originating peer to the message before passing 
-it to the application. Messages received are fair-queued from among all 
-connected peers. 
+containing the _identity_ of the originating peer to the message before
+passing it to the application. Messages received are fair-queued from among
+all connected peers. 
 
-When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of the 
-message and use it to determine the _identity_ of the peer the message shall be 
-routed to, and unroutable messages shall cause an EHOSTUNREACH or EAGAIN error.
+When sending TCP data, a 'ZMQ_STREAM' socket shall remove the first part of
+the message and use it to determine the _identity_ of the peer the message
+shall be routed to, and unroutable messages shall cause an EHOSTUNREACH or
+EAGAIN error.
 
-To open a connection to a server, use the zmq_connect call, and then fetch the 
-socket identity using the ZMQ_IDENTITY zmq_getsockopt call.
+Since a 'ZMQ_STREAM' socket only generates a message when data was received
+there can never be an actual message with zero payload. Instead messages with
+zero payload are used to notify the socket of connections and disconnections
+of peers. In both cases a message is received with the _identity_ of the
+involved peer as first frame and an empty second frame. It is the job of the
+application to track each _identity_ to distinguish between connections and
+disconnections, if it cares. It is save to simply discard these messages.
 
-To close a specific client connection, as a server, send the identity frame
-followed by a zero-length message (see EXAMPLE section).  Similarly, when the
-peer disconnects (or the connection is lost), a zero-length message will be
-received by the application.
+To open a connection to a server, use the zmq_connect call, and then receive
+the connection notification message to get the _identity_ of the server.
 
-The ZMQ_SNDMORE flag is ignored on data frames. You must send one identity frame
-followed by one data frame.
+Mirroring the way disconnection notifications are received the same method
+is used to close a specific client connection. Sending an _identity_ frame
+followed by a zero-length message (see EXAMPLE section) will close the
+connection to the specified peer.
 
-Also, please note that omitting the ZMQ_SNDMORE flag will prevent sending further
-data (from any client) on the same socket.
+IMPORTANT: All messages send to a 'ZMQ_STREAM' socket must use the
+ZMQ_SNDMORE flag and always send one identity frame followed by one data
+frame. The ZMQ_SNDMORE flag is ignored on data frames. But omitting the
+ZMQ_SNDMORE flag will prevent sending further data (to any peer) on the same
+socket.
 
 [horizontal]
 .Summary of ZMQ_STREAM characteristics
-Compatible peer sockets:: none.
+Compatible peer sockets:: 'ZMQ_STREAM'
 Direction:: Bidirectional
 Send/receive pattern:: Unrestricted
 Outgoing routing strategy:: See text
