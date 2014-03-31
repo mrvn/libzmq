@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <string>
 #include <string.h>
+#include <stdio.h>
 
 #if defined _WIN32
 #   if defined _MSC_VER
@@ -65,6 +66,10 @@ bounce (void *server, void *client)
     //  Receive message at server side
     char buffer [32];
     rc = zmq_recv (server, buffer, 32, 0);
+    if (rc < 0) {
+      perror("bounce(): server zmq_recv()");
+      exit(1);
+    }
     assert (rc == 32);
     //  Check that message is still the same
     assert (memcmp (buffer, content, 32) == 0);
