@@ -57,7 +57,7 @@ if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
                    test_pair_ipc \
                    test_reqrep_ipc \
-                   test_timeo \
+                   test_timeo
 #                   test_filter_ipc
 if HAVE_FORK
 noinst_PROGRAMS += test_fork

@@ -1,6 +1,6 @@
-zeromq (4.1+git+20140331-1) stable; urgency=low
+zeromq (4.1+git+20140519-1) stable; urgency=low
 
-  * Pull from git on 2014.03.31
+  * Pull from git on 2014.05.19
   * Disable the filter_ipc test as it fails.
 
  -- Goswin von Brederlow <brederlo@q-leap.de>  Mon, 31 Mar 2014 11:40:35 +0200
