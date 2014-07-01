@@ -7,7 +7,7 @@ Author: Goswin von Brederlow <brederlo@q-leap.de>
 Index: libzmq.git+mrvn/tests/test_filter_ipc.cpp
 ===================================================================
 --- libzmq.git+mrvn.orig/tests/test_filter_ipc.cpp	2014-03-31 11:45:16.000000000 +0200
-+++ libzmq.git+mrvn/tests/test_filter_ipc.cpp	2014-03-31 11:50:01.313239191 +0200
++++ libzmq.git+mrvn/tests/test_filter_ipc.cpp	2014-06-18 14:31:46.804956873 +0200
 @@ -22,6 +22,7 @@
  
  #include <string>
@@ -67,7 +67,7 @@ Index: libzmq.git+mrvn/tests/test_filter_ipc.cpp
 Index: libzmq.git+mrvn/tests/testutil.hpp
 ===================================================================
 --- libzmq.git+mrvn.orig/tests/testutil.hpp	2014-03-31 11:45:16.000000000 +0200
-+++ libzmq.git+mrvn/tests/testutil.hpp	2014-03-31 11:45:16.000000000 +0200
++++ libzmq.git+mrvn/tests/testutil.hpp	2014-06-18 14:31:46.804956873 +0200
 @@ -35,6 +35,7 @@
  #include <assert.h>
  #include <stdarg.h>
@@ -87,3 +87,59 @@ Index: libzmq.git+mrvn/tests/testutil.hpp
      assert (rc == 32);
      //  Check that message is still the same
      assert (memcmp (buffer, content, 32) == 0);
+@@ -112,15 +117,17 @@
+ {
+     const char *content = "12345678ABCDEFGH12345678abcdefgh";
+     char buffer [32];
++    int timeout = 150;
+ 
+     //  Send message from client to server
+-    int rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
+-    assert (rc == 32);
++    int rc = zmq_setsockopt (client, ZMQ_SNDTIMEO, &timeout, sizeof (int));
++    assert (rc == 0);
++    rc = zmq_send (client, content, 32, ZMQ_SNDMORE);
++    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+     rc = zmq_send (client, content, 32, 0);
+-    assert (rc == 32);
++    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+ 
+     //  Receive message at server side (should not succeed)
+-    int timeout = 150;
+     rc = zmq_setsockopt (server, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+     assert (rc == 0);
+     rc = zmq_recv (server, buffer, 32, 0);
+@@ -128,10 +135,12 @@
+     assert (zmq_errno () == EAGAIN);
+ 
+     //  Send message from server to client to test other direction
++    rc = zmq_setsockopt (server, ZMQ_SNDTIMEO, &timeout, sizeof (int));
++    assert (rc == 0);
+     rc = zmq_send (server, content, 32, ZMQ_SNDMORE);
+-    assert (rc == 32);
++    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+     rc = zmq_send (server, content, 32, 0);
+-    assert (rc == 32);
++    assert ((rc == 32) || ((rc == -1) && (errno == EAGAIN)));
+ 
+     //  Receive message at client side (should not succeed)
+     rc = zmq_setsockopt (client, ZMQ_RCVTIMEO, &timeout, sizeof (int));
+@@ -244,7 +253,7 @@
+ }
+ 
+ 
+-// Sets a zero linger period on a socket and closes it.
++//  Sets a zero linger period on a socket and closes it.
+ void close_zero_linger (void *socket)
+ {
+     int linger = 0;
+@@ -262,6 +271,9 @@
+     _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
+     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
+ #   endif
++#else
++    // abort test after 60 seconds
++    alarm(60);
+ #endif
+ }
+ 

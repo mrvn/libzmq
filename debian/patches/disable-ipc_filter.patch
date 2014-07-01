@@ -24,52 +24,194 @@ Forwarded: <no|not-needed|url proving that it has been forwarded>
 Reviewed-By: <name and email of someone who approved the patch>
 Last-Update: <YYYY-MM-DD>
 
---- zeromq-4.1+git+20140331.orig/tests/Makefile.am
-+++ zeromq-4.1+git+20140331/tests/Makefile.am
-@@ -55,8 +55,8 @@ noinst_PROGRAMS += test_shutdown_stress
+Index: libzmq.git+mrvn/tests/Makefile.am
+===================================================================
+--- libzmq.git+mrvn.orig/tests/Makefile.am	2014-06-18 14:32:37.262759667 +0200
++++ libzmq.git+mrvn/tests/Makefile.am	2014-06-18 14:32:55.761954080 +0200
+@@ -1,5 +1,5 @@
+-INCLUDES = -I$(top_builddir)/include \
+-           -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include \
++              -I$(top_srcdir)/include
+ 
+ LDADD = $(top_builddir)/src/libzmq.la
+ 
+@@ -19,13 +19,13 @@
+                   test_term_endpoint \
+                   test_srcfd \
+                   test_monitor \
+-                  test_resource \
+                   test_router_mandatory \
+                   test_router_handover \
+                   test_probe_router \
+                   test_stream \
+                   test_stream_empty \
+                   test_stream_disconnect \
++                  test_stream_timeout \
+                   test_disconnect_inproc \
+                   test_ctx_options \
+                   test_ctx_destroy \
+@@ -48,15 +48,20 @@
+                   test_many_sockets \
+                   test_ipc_wildcard \
+                   test_diffserv \
+-                  test_connect_rid
++                  test_connect_rid \
++		  test_bind_src_address \
++		  test_metadata\
++		  test_id2fd
+ 
+ if !ON_MINGW
+ noinst_PROGRAMS += test_shutdown_stress \
                     test_pair_ipc \
                     test_reqrep_ipc \
-                    test_timeo \
+-                   test_timeo \
 -                   test_fork \
 -                   test_filter_ipc 
-+                   test_fork
-+#                   test_filter_ipc 
++                   test_timeo
++#                   test_filter_ipc
++if HAVE_FORK
++noinst_PROGRAMS += test_fork
++endif
  endif
  
  if BUILD_TIPC
-@@ -122,7 +122,7 @@ test_pair_ipc_SOURCES = test_pair_ipc.cp
+@@ -86,12 +91,12 @@
+ test_term_endpoint_SOURCES = test_term_endpoint.cpp
+ test_srcfd_SOURCES = test_srcfd.cpp
+ test_monitor_SOURCES = test_monitor.cpp
+-test_resource_SOURCES = test_resource.cpp
+ test_router_mandatory_SOURCES = test_router_mandatory.cpp
+ test_router_handover_SOURCES = test_router_handover.cpp
+ test_probe_router_SOURCES = test_probe_router.cpp
+ test_stream_SOURCES = test_stream.cpp
+ test_stream_empty_SOURCES = test_stream_empty.cpp
++test_stream_timeout_SOURCES = test_stream_timeout.cpp
+ test_stream_disconnect_SOURCES = test_stream_disconnect.cpp
+ test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
+ test_ctx_options_SOURCES = test_ctx_options.cpp
+@@ -116,13 +121,18 @@
+ test_ipc_wildcard_SOURCES = test_ipc_wildcard.cpp
+ test_diffserv_SOURCES = test_diffserv.cpp
+ test_connect_rid_SOURCES = test_connect_rid.cpp
++test_bind_src_address_SOURCES = test_bind_src_address.cpp
++test_metadata_SOURCES = test_metadata.cpp
++test_id2fd_SOURCES = test_id2fd.cpp
+ if !ON_MINGW
+ test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
+ test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
  test_reqrep_ipc_SOURCES = test_reqrep_ipc.cpp testutil.hpp
  test_timeo_SOURCES = test_timeo.cpp
++if HAVE_FORK
  test_fork_SOURCES = test_fork.cpp
 -test_filter_ipc_SOURCES = test_filter_ipc.cpp
++endif
 +#test_filter_ipc_SOURCES = test_filter_ipc.cpp
  endif
  if BUILD_TIPC
  test_connect_delay_tipc_SOURCES = test_connect_delay_tipc.cpp
---- zeromq-4.1+git+20140331.orig/tests/Makefile.in
-+++ zeromq-4.1+git+20140331/tests/Makefile.in
-@@ -62,9 +62,9 @@ noinst_PROGRAMS = test_system$(EXEEXT) t
+@@ -137,7 +147,7 @@
+ 
+ #  Run the test cases
+ TESTS = $(noinst_PROGRAMS)
+-XFAIL_TESTS = test_resource
++XFAIL_TESTS =
+ 
+ if !ON_LINUX
+ XFAIL_TESTS += test_abstract_ipc
+Index: libzmq.git+mrvn/tests/Makefile.in
+===================================================================
+--- libzmq.git+mrvn.orig/tests/Makefile.in	2014-06-18 14:32:37.262759667 +0200
++++ libzmq.git+mrvn/tests/Makefile.in	2014-06-18 14:33:29.350491346 +0200
+@@ -42,30 +42,32 @@
+ 	test_connect_resolve$(EXEEXT) test_immediate$(EXEEXT) \
+ 	test_last_endpoint$(EXEEXT) test_term_endpoint$(EXEEXT) \
+ 	test_srcfd$(EXEEXT) test_monitor$(EXEEXT) \
+-	test_resource$(EXEEXT) test_router_mandatory$(EXEEXT) \
+-	test_router_handover$(EXEEXT) test_probe_router$(EXEEXT) \
+-	test_stream$(EXEEXT) test_stream_empty$(EXEEXT) \
+-	test_stream_disconnect$(EXEEXT) \
+-	test_disconnect_inproc$(EXEEXT) test_ctx_options$(EXEEXT) \
+-	test_ctx_destroy$(EXEEXT) test_security_null$(EXEEXT) \
+-	test_security_plain$(EXEEXT) test_security_curve$(EXEEXT) \
+-	test_iov$(EXEEXT) test_spec_req$(EXEEXT) \
+-	test_spec_rep$(EXEEXT) test_spec_dealer$(EXEEXT) \
+-	test_spec_router$(EXEEXT) test_spec_pushpull$(EXEEXT) \
+-	test_req_correlate$(EXEEXT) test_req_relaxed$(EXEEXT) \
+-	test_conflate$(EXEEXT) test_inproc_connect$(EXEEXT) \
+-	test_issue_566$(EXEEXT) test_proxy$(EXEEXT) \
+-	test_abstract_ipc$(EXEEXT) test_many_sockets$(EXEEXT) \
+-	test_ipc_wildcard$(EXEEXT) test_diffserv$(EXEEXT) \
+-	test_connect_rid$(EXEEXT) $(am__EXEEXT_1) $(am__EXEEXT_2)
++	test_router_mandatory$(EXEEXT) test_router_handover$(EXEEXT) \
++	test_probe_router$(EXEEXT) test_stream$(EXEEXT) \
++	test_stream_empty$(EXEEXT) test_stream_disconnect$(EXEEXT) \
++	test_stream_timeout$(EXEEXT) test_disconnect_inproc$(EXEEXT) \
++	test_ctx_options$(EXEEXT) test_ctx_destroy$(EXEEXT) \
++	test_security_null$(EXEEXT) test_security_plain$(EXEEXT) \
++	test_security_curve$(EXEEXT) test_iov$(EXEEXT) \
++	test_spec_req$(EXEEXT) test_spec_rep$(EXEEXT) \
++	test_spec_dealer$(EXEEXT) test_spec_router$(EXEEXT) \
++	test_spec_pushpull$(EXEEXT) test_req_correlate$(EXEEXT) \
++	test_req_relaxed$(EXEEXT) test_conflate$(EXEEXT) \
++	test_inproc_connect$(EXEEXT) test_issue_566$(EXEEXT) \
++	test_proxy$(EXEEXT) test_abstract_ipc$(EXEEXT) \
++	test_many_sockets$(EXEEXT) test_ipc_wildcard$(EXEEXT) \
++	test_diffserv$(EXEEXT) test_connect_rid$(EXEEXT) \
++	test_bind_src_address$(EXEEXT) test_metadata$(EXEEXT) \
++	test_id2fd$(EXEEXT) $(am__EXEEXT_1) $(am__EXEEXT_2) \
++	$(am__EXEEXT_3)
+ @ON_MINGW_FALSE@am__append_1 = test_shutdown_stress \
  @ON_MINGW_FALSE@                   test_pair_ipc \
  @ON_MINGW_FALSE@                   test_reqrep_ipc \
- @ON_MINGW_FALSE@                   test_timeo \
+-@ON_MINGW_FALSE@                   test_timeo \
 -@ON_MINGW_FALSE@                   test_fork \
 -@ON_MINGW_FALSE@                   test_filter_ipc 
-+@ON_MINGW_FALSE@                   test_fork
++@ON_MINGW_FALSE@                   test_timeo
  
-+#                   test_filter_ipc 
- @BUILD_TIPC_TRUE@am__append_2 = test_connect_delay_tipc \
+-@BUILD_TIPC_TRUE@am__append_2 = test_connect_delay_tipc \
++#                   test_filter_ipc
++@HAVE_FORK_TRUE@@ON_MINGW_FALSE@am__append_2 = test_fork
++@BUILD_TIPC_TRUE@am__append_3 = test_connect_delay_tipc \
  @BUILD_TIPC_TRUE@                  test_pair_tipc \
  @BUILD_TIPC_TRUE@                  test_reqrep_device_tipc \
-@@ -94,7 +94,7 @@ CONFIG_CLEAN_VPATH_FILES =
+ @BUILD_TIPC_TRUE@                  test_reqrep_tipc \
+@@ -74,8 +76,8 @@
+ @BUILD_TIPC_TRUE@                  test_sub_forward_tipc \
+ @BUILD_TIPC_TRUE@                  test_term_endpoint_tipc
+ 
+-XFAIL_TESTS = test_resource$(EXEEXT) $(am__EXEEXT_3)
+-@ON_LINUX_FALSE@am__append_3 = test_abstract_ipc
++XFAIL_TESTS = $(am__EXEEXT_4)
++@ON_LINUX_FALSE@am__append_4 = test_abstract_ipc
+ subdir = tests
+ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
+@@ -93,9 +95,9 @@
+ CONFIG_CLEAN_VPATH_FILES =
  @ON_MINGW_FALSE@am__EXEEXT_1 = test_shutdown_stress$(EXEEXT) \
  @ON_MINGW_FALSE@	test_pair_ipc$(EXEEXT) \
- @ON_MINGW_FALSE@	test_reqrep_ipc$(EXEEXT) test_timeo$(EXEEXT) \
+-@ON_MINGW_FALSE@	test_reqrep_ipc$(EXEEXT) test_timeo$(EXEEXT) \
 -@ON_MINGW_FALSE@	test_fork$(EXEEXT) test_filter_ipc$(EXEEXT)
-+@ON_MINGW_FALSE@	test_fork$(EXEEXT)
- @BUILD_TIPC_TRUE@am__EXEEXT_2 = test_connect_delay_tipc$(EXEEXT) \
+-@BUILD_TIPC_TRUE@am__EXEEXT_2 = test_connect_delay_tipc$(EXEEXT) \
++@ON_MINGW_FALSE@	test_reqrep_ipc$(EXEEXT) test_timeo$(EXEEXT)
++@HAVE_FORK_TRUE@@ON_MINGW_FALSE@am__EXEEXT_2 = test_fork$(EXEEXT)
++@BUILD_TIPC_TRUE@am__EXEEXT_3 = test_connect_delay_tipc$(EXEEXT) \
  @BUILD_TIPC_TRUE@	test_pair_tipc$(EXEEXT) \
  @BUILD_TIPC_TRUE@	test_reqrep_device_tipc$(EXEEXT) \
-@@ -147,12 +147,6 @@ am_test_disconnect_inproc_OBJECTS = test
+ @BUILD_TIPC_TRUE@	test_reqrep_tipc$(EXEEXT) \
+@@ -111,6 +113,10 @@
+ AM_V_lt = $(am__v_lt_@AM_V@)
+ am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+ am__v_lt_0 = --silent
++am_test_bind_src_address_OBJECTS = test_bind_src_address.$(OBJEXT)
++test_bind_src_address_OBJECTS = $(am_test_bind_src_address_OBJECTS)
++test_bind_src_address_LDADD = $(LDADD)
++test_bind_src_address_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+ am_test_conflate_OBJECTS = test_conflate.$(OBJEXT)
+ test_conflate_OBJECTS = $(am_test_conflate_OBJECTS)
+ test_conflate_LDADD = $(LDADD)
+@@ -147,14 +153,9 @@
  test_disconnect_inproc_OBJECTS = $(am_test_disconnect_inproc_OBJECTS)
  test_disconnect_inproc_LDADD = $(LDADD)
  test_disconnect_inproc_DEPENDENCIES = $(top_builddir)/src/libzmq.la
@@ -80,9 +222,64 @@ Last-Update: <YYYY-MM-DD>
 -test_filter_ipc_LDADD = $(LDADD)
 -test_filter_ipc_DEPENDENCIES = $(top_builddir)/src/libzmq.la
  am__test_fork_SOURCES_DIST = test_fork.cpp
- @ON_MINGW_FALSE@am_test_fork_OBJECTS = test_fork.$(OBJEXT)
+-@ON_MINGW_FALSE@am_test_fork_OBJECTS = test_fork.$(OBJEXT)
++@HAVE_FORK_TRUE@@ON_MINGW_FALSE@am_test_fork_OBJECTS =  \
++@HAVE_FORK_TRUE@@ON_MINGW_FALSE@	test_fork.$(OBJEXT)
  test_fork_OBJECTS = $(am_test_fork_OBJECTS)
-@@ -430,17 +424,17 @@ SOURCES = $(test_abstract_ipc_SOURCES) $
+ test_fork_LDADD = $(LDADD)
+ test_fork_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+@@ -162,6 +163,10 @@
+ test_hwm_OBJECTS = $(am_test_hwm_OBJECTS)
+ test_hwm_LDADD = $(LDADD)
+ test_hwm_DEPENDENCIES = $(top_builddir)/src/libzmq.la
++am_test_id2fd_OBJECTS = test_id2fd.$(OBJEXT)
++test_id2fd_OBJECTS = $(am_test_id2fd_OBJECTS)
++test_id2fd_LDADD = $(LDADD)
++test_id2fd_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+ am_test_immediate_OBJECTS = test_immediate.$(OBJEXT)
+ test_immediate_OBJECTS = $(am_test_immediate_OBJECTS)
+ test_immediate_LDADD = $(LDADD)
+@@ -194,6 +199,10 @@
+ test_many_sockets_OBJECTS = $(am_test_many_sockets_OBJECTS)
+ test_many_sockets_LDADD = $(LDADD)
+ test_many_sockets_DEPENDENCIES = $(top_builddir)/src/libzmq.la
++am_test_metadata_OBJECTS = test_metadata.$(OBJEXT)
++test_metadata_OBJECTS = $(am_test_metadata_OBJECTS)
++test_metadata_LDADD = $(LDADD)
++test_metadata_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+ am_test_monitor_OBJECTS = test_monitor.$(OBJEXT)
+ test_monitor_OBJECTS = $(am_test_monitor_OBJECTS)
+ test_monitor_LDADD = $(LDADD)
+@@ -268,10 +277,6 @@
+ test_reqrep_tipc_OBJECTS = $(am_test_reqrep_tipc_OBJECTS)
+ test_reqrep_tipc_LDADD = $(LDADD)
+ test_reqrep_tipc_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+-am_test_resource_OBJECTS = test_resource.$(OBJEXT)
+-test_resource_OBJECTS = $(am_test_resource_OBJECTS)
+-test_resource_LDADD = $(LDADD)
+-test_resource_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+ am_test_router_handover_OBJECTS = test_router_handover.$(OBJEXT)
+ test_router_handover_OBJECTS = $(am_test_router_handover_OBJECTS)
+ test_router_handover_LDADD = $(LDADD)
+@@ -352,6 +357,10 @@
+ test_stream_empty_OBJECTS = $(am_test_stream_empty_OBJECTS)
+ test_stream_empty_LDADD = $(LDADD)
+ test_stream_empty_DEPENDENCIES = $(top_builddir)/src/libzmq.la
++am_test_stream_timeout_OBJECTS = test_stream_timeout.$(OBJEXT)
++test_stream_timeout_OBJECTS = $(am_test_stream_timeout_OBJECTS)
++test_stream_timeout_LDADD = $(LDADD)
++test_stream_timeout_DEPENDENCIES = $(top_builddir)/src/libzmq.la
+ am_test_sub_forward_OBJECTS = test_sub_forward.$(OBJEXT)
+ test_sub_forward_OBJECTS = $(am_test_sub_forward_OBJECTS)
+ test_sub_forward_LDADD = $(LDADD)
+@@ -425,17 +434,18 @@
+ AM_V_GEN = $(am__v_GEN_@AM_V@)
+ am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
+ am__v_GEN_0 = @echo "  GEN   " $@;
+-SOURCES = $(test_abstract_ipc_SOURCES) $(test_conflate_SOURCES) \
++SOURCES = $(test_abstract_ipc_SOURCES) \
++	$(test_bind_src_address_SOURCES) $(test_conflate_SOURCES) \
+ 	$(test_connect_delay_tipc_SOURCES) \
  	$(test_connect_resolve_SOURCES) $(test_connect_rid_SOURCES) \
  	$(test_ctx_destroy_SOURCES) $(test_ctx_options_SOURCES) \
  	$(test_diffserv_SOURCES) $(test_disconnect_inproc_SOURCES) \
@@ -92,43 +289,138 @@ Last-Update: <YYYY-MM-DD>
 -	$(test_iov_SOURCES) $(test_ipc_wildcard_SOURCES) \
 -	$(test_issue_566_SOURCES) $(test_last_endpoint_SOURCES) \
 -	$(test_many_sockets_SOURCES) $(test_monitor_SOURCES) \
--	$(test_msg_flags_SOURCES) $(test_pair_inproc_SOURCES) \
--	$(test_pair_ipc_SOURCES) $(test_pair_tcp_SOURCES) \
--	$(test_pair_tipc_SOURCES) $(test_probe_router_SOURCES) \
--	$(test_proxy_SOURCES) $(test_req_correlate_SOURCES) \
--	$(test_req_relaxed_SOURCES) $(test_reqrep_device_SOURCES) \
-+	$(test_fork_SOURCES) $(test_hwm_SOURCES) \
++	$(test_fork_SOURCES) $(test_hwm_SOURCES) $(test_id2fd_SOURCES) \
 +	$(test_immediate_SOURCES) $(test_inproc_connect_SOURCES) \
 +	$(test_invalid_rep_SOURCES) $(test_iov_SOURCES) \
 +	$(test_ipc_wildcard_SOURCES) $(test_issue_566_SOURCES) \
 +	$(test_last_endpoint_SOURCES) $(test_many_sockets_SOURCES) \
-+	$(test_monitor_SOURCES) $(test_msg_flags_SOURCES) \
-+	$(test_pair_inproc_SOURCES) $(test_pair_ipc_SOURCES) \
-+	$(test_pair_tcp_SOURCES) $(test_pair_tipc_SOURCES) \
-+	$(test_probe_router_SOURCES) $(test_proxy_SOURCES) \
-+	$(test_req_correlate_SOURCES) $(test_req_relaxed_SOURCES) \
-+	$(test_reqrep_device_SOURCES) \
++	$(test_metadata_SOURCES) $(test_monitor_SOURCES) \
+ 	$(test_msg_flags_SOURCES) $(test_pair_inproc_SOURCES) \
+ 	$(test_pair_ipc_SOURCES) $(test_pair_tcp_SOURCES) \
+ 	$(test_pair_tipc_SOURCES) $(test_probe_router_SOURCES) \
+@@ -444,7 +454,7 @@
  	$(test_reqrep_device_tipc_SOURCES) \
  	$(test_reqrep_inproc_SOURCES) $(test_reqrep_ipc_SOURCES) \
  	$(test_reqrep_tcp_SOURCES) $(test_reqrep_tipc_SOURCES) \
-@@ -463,7 +457,6 @@ DIST_SOURCES = $(test_abstract_ipc_SOURC
+-	$(test_resource_SOURCES) $(test_router_handover_SOURCES) \
++	$(test_router_handover_SOURCES) \
+ 	$(test_router_mandatory_SOURCES) \
+ 	$(test_router_mandatory_tipc_SOURCES) \
+ 	$(test_security_curve_SOURCES) $(test_security_null_SOURCES) \
+@@ -454,21 +464,22 @@
+ 	$(test_spec_rep_SOURCES) $(test_spec_req_SOURCES) \
+ 	$(test_spec_router_SOURCES) $(test_srcfd_SOURCES) \
+ 	$(test_stream_SOURCES) $(test_stream_disconnect_SOURCES) \
+-	$(test_stream_empty_SOURCES) $(test_sub_forward_SOURCES) \
+-	$(test_sub_forward_tipc_SOURCES) $(test_system_SOURCES) \
+-	$(test_term_endpoint_SOURCES) \
++	$(test_stream_empty_SOURCES) $(test_stream_timeout_SOURCES) \
++	$(test_sub_forward_SOURCES) $(test_sub_forward_tipc_SOURCES) \
++	$(test_system_SOURCES) $(test_term_endpoint_SOURCES) \
+ 	$(test_term_endpoint_tipc_SOURCES) $(test_timeo_SOURCES)
+-DIST_SOURCES = $(test_abstract_ipc_SOURCES) $(test_conflate_SOURCES) \
++DIST_SOURCES = $(test_abstract_ipc_SOURCES) \
++	$(test_bind_src_address_SOURCES) $(test_conflate_SOURCES) \
+ 	$(am__test_connect_delay_tipc_SOURCES_DIST) \
  	$(test_connect_resolve_SOURCES) $(test_connect_rid_SOURCES) \
  	$(test_ctx_destroy_SOURCES) $(test_ctx_options_SOURCES) \
  	$(test_diffserv_SOURCES) $(test_disconnect_inproc_SOURCES) \
 -	$(am__test_filter_ipc_SOURCES_DIST) \
  	$(am__test_fork_SOURCES_DIST) $(test_hwm_SOURCES) \
- 	$(test_immediate_SOURCES) $(test_inproc_connect_SOURCES) \
- 	$(test_invalid_rep_SOURCES) $(test_iov_SOURCES) \
-@@ -693,7 +686,7 @@ test_connect_rid_SOURCES = test_connect_
+-	$(test_immediate_SOURCES) $(test_inproc_connect_SOURCES) \
+-	$(test_invalid_rep_SOURCES) $(test_iov_SOURCES) \
+-	$(test_ipc_wildcard_SOURCES) $(test_issue_566_SOURCES) \
+-	$(test_last_endpoint_SOURCES) $(test_many_sockets_SOURCES) \
++	$(test_id2fd_SOURCES) $(test_immediate_SOURCES) \
++	$(test_inproc_connect_SOURCES) $(test_invalid_rep_SOURCES) \
++	$(test_iov_SOURCES) $(test_ipc_wildcard_SOURCES) \
++	$(test_issue_566_SOURCES) $(test_last_endpoint_SOURCES) \
++	$(test_many_sockets_SOURCES) $(test_metadata_SOURCES) \
+ 	$(test_monitor_SOURCES) $(test_msg_flags_SOURCES) \
+ 	$(test_pair_inproc_SOURCES) $(am__test_pair_ipc_SOURCES_DIST) \
+ 	$(test_pair_tcp_SOURCES) $(am__test_pair_tipc_SOURCES_DIST) \
+@@ -478,7 +489,7 @@
+ 	$(am__test_reqrep_device_tipc_SOURCES_DIST) \
+ 	$(test_reqrep_inproc_SOURCES) \
+ 	$(am__test_reqrep_ipc_SOURCES_DIST) $(test_reqrep_tcp_SOURCES) \
+-	$(am__test_reqrep_tipc_SOURCES_DIST) $(test_resource_SOURCES) \
++	$(am__test_reqrep_tipc_SOURCES_DIST) \
+ 	$(test_router_handover_SOURCES) \
+ 	$(test_router_mandatory_SOURCES) \
+ 	$(am__test_router_mandatory_tipc_SOURCES_DIST) \
+@@ -490,7 +501,8 @@
+ 	$(test_spec_rep_SOURCES) $(test_spec_req_SOURCES) \
+ 	$(test_spec_router_SOURCES) $(test_srcfd_SOURCES) \
+ 	$(test_stream_SOURCES) $(test_stream_disconnect_SOURCES) \
+-	$(test_stream_empty_SOURCES) $(test_sub_forward_SOURCES) \
++	$(test_stream_empty_SOURCES) $(test_stream_timeout_SOURCES) \
++	$(test_sub_forward_SOURCES) \
+ 	$(am__test_sub_forward_tipc_SOURCES_DIST) \
+ 	$(test_system_SOURCES) $(test_term_endpoint_SOURCES) \
+ 	$(am__test_term_endpoint_tipc_SOURCES_DIST) \
+@@ -499,7 +511,7 @@
+ CTAGS = ctags
+ am__tty_colors = \
+ red=; grn=; lgn=; blu=; std=
+-@ON_LINUX_FALSE@am__EXEEXT_3 = test_abstract_ipc$(EXEEXT)
++@ON_LINUX_FALSE@am__EXEEXT_4 = test_abstract_ipc$(EXEEXT)
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ ACLOCAL = @ACLOCAL@
+ AMTAR = @AMTAR@
+@@ -638,8 +650,8 @@
+ top_build_prefix = @top_build_prefix@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+-INCLUDES = -I$(top_builddir)/include \
+-           -I$(top_srcdir)/include
++AM_CPPFLAGS = -I$(top_builddir)/include \
++              -I$(top_srcdir)/include
+ 
+ LDADD = $(top_builddir)/src/libzmq.la
+ test_system_SOURCES = test_system.cpp
+@@ -658,12 +670,12 @@
+ test_term_endpoint_SOURCES = test_term_endpoint.cpp
+ test_srcfd_SOURCES = test_srcfd.cpp
+ test_monitor_SOURCES = test_monitor.cpp
+-test_resource_SOURCES = test_resource.cpp
+ test_router_mandatory_SOURCES = test_router_mandatory.cpp
+ test_router_handover_SOURCES = test_router_handover.cpp
+ test_probe_router_SOURCES = test_probe_router.cpp
+ test_stream_SOURCES = test_stream.cpp
+ test_stream_empty_SOURCES = test_stream_empty.cpp
++test_stream_timeout_SOURCES = test_stream_timeout.cpp
+ test_stream_disconnect_SOURCES = test_stream_disconnect.cpp
+ test_disconnect_inproc_SOURCES = test_disconnect_inproc.cpp
+ test_ctx_options_SOURCES = test_ctx_options.cpp
+@@ -688,12 +700,15 @@
+ test_ipc_wildcard_SOURCES = test_ipc_wildcard.cpp
+ test_diffserv_SOURCES = test_diffserv.cpp
+ test_connect_rid_SOURCES = test_connect_rid.cpp
++test_bind_src_address_SOURCES = test_bind_src_address.cpp
++test_metadata_SOURCES = test_metadata.cpp
++test_id2fd_SOURCES = test_id2fd.cpp
+ @ON_MINGW_FALSE@test_shutdown_stress_SOURCES = test_shutdown_stress.cpp
+ @ON_MINGW_FALSE@test_pair_ipc_SOURCES = test_pair_ipc.cpp testutil.hpp
  @ON_MINGW_FALSE@test_reqrep_ipc_SOURCES = test_reqrep_ipc.cpp testutil.hpp
  @ON_MINGW_FALSE@test_timeo_SOURCES = test_timeo.cpp
- @ON_MINGW_FALSE@test_fork_SOURCES = test_fork.cpp
+-@ON_MINGW_FALSE@test_fork_SOURCES = test_fork.cpp
 -@ON_MINGW_FALSE@test_filter_ipc_SOURCES = test_filter_ipc.cpp
++@HAVE_FORK_TRUE@@ON_MINGW_FALSE@test_fork_SOURCES = test_fork.cpp
 +#test_filter_ipc_SOURCES = test_filter_ipc.cpp
  @BUILD_TIPC_TRUE@test_connect_delay_tipc_SOURCES = test_connect_delay_tipc.cpp
  @BUILD_TIPC_TRUE@test_pair_tipc_SOURCES = test_pair_tipc.cpp
  @BUILD_TIPC_TRUE@test_reqrep_device_tipc_SOURCES = test_reqrep_device_tipc.cpp
-@@ -775,9 +768,6 @@ test_diffserv$(EXEEXT): $(test_diffserv_
+@@ -751,6 +766,9 @@
+ test_abstract_ipc$(EXEEXT): $(test_abstract_ipc_OBJECTS) $(test_abstract_ipc_DEPENDENCIES) $(EXTRA_test_abstract_ipc_DEPENDENCIES) 
+ 	@rm -f test_abstract_ipc$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_abstract_ipc_OBJECTS) $(test_abstract_ipc_LDADD) $(LIBS)
++test_bind_src_address$(EXEEXT): $(test_bind_src_address_OBJECTS) $(test_bind_src_address_DEPENDENCIES) $(EXTRA_test_bind_src_address_DEPENDENCIES) 
++	@rm -f test_bind_src_address$(EXEEXT)
++	$(AM_V_CXXLD)$(CXXLINK) $(test_bind_src_address_OBJECTS) $(test_bind_src_address_LDADD) $(LIBS)
+ test_conflate$(EXEEXT): $(test_conflate_OBJECTS) $(test_conflate_DEPENDENCIES) $(EXTRA_test_conflate_DEPENDENCIES) 
+ 	@rm -f test_conflate$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_conflate_OBJECTS) $(test_conflate_LDADD) $(LIBS)
+@@ -775,15 +793,15 @@
  test_disconnect_inproc$(EXEEXT): $(test_disconnect_inproc_OBJECTS) $(test_disconnect_inproc_DEPENDENCIES) $(EXTRA_test_disconnect_inproc_DEPENDENCIES) 
  	@rm -f test_disconnect_inproc$(EXEEXT)
  	$(AM_V_CXXLD)$(CXXLINK) $(test_disconnect_inproc_OBJECTS) $(test_disconnect_inproc_LDADD) $(LIBS)
@@ -138,11 +430,85 @@ Last-Update: <YYYY-MM-DD>
  test_fork$(EXEEXT): $(test_fork_OBJECTS) $(test_fork_DEPENDENCIES) $(EXTRA_test_fork_DEPENDENCIES) 
  	@rm -f test_fork$(EXEEXT)
  	$(AM_V_CXXLD)$(CXXLINK) $(test_fork_OBJECTS) $(test_fork_LDADD) $(LIBS)
-@@ -944,7 +934,6 @@ distclean-compile:
+ test_hwm$(EXEEXT): $(test_hwm_OBJECTS) $(test_hwm_DEPENDENCIES) $(EXTRA_test_hwm_DEPENDENCIES) 
+ 	@rm -f test_hwm$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_hwm_OBJECTS) $(test_hwm_LDADD) $(LIBS)
++test_id2fd$(EXEEXT): $(test_id2fd_OBJECTS) $(test_id2fd_DEPENDENCIES) $(EXTRA_test_id2fd_DEPENDENCIES) 
++	@rm -f test_id2fd$(EXEEXT)
++	$(AM_V_CXXLD)$(CXXLINK) $(test_id2fd_OBJECTS) $(test_id2fd_LDADD) $(LIBS)
+ test_immediate$(EXEEXT): $(test_immediate_OBJECTS) $(test_immediate_DEPENDENCIES) $(EXTRA_test_immediate_DEPENDENCIES) 
+ 	@rm -f test_immediate$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_immediate_OBJECTS) $(test_immediate_LDADD) $(LIBS)
+@@ -808,6 +826,9 @@
+ test_many_sockets$(EXEEXT): $(test_many_sockets_OBJECTS) $(test_many_sockets_DEPENDENCIES) $(EXTRA_test_many_sockets_DEPENDENCIES) 
+ 	@rm -f test_many_sockets$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_many_sockets_OBJECTS) $(test_many_sockets_LDADD) $(LIBS)
++test_metadata$(EXEEXT): $(test_metadata_OBJECTS) $(test_metadata_DEPENDENCIES) $(EXTRA_test_metadata_DEPENDENCIES) 
++	@rm -f test_metadata$(EXEEXT)
++	$(AM_V_CXXLD)$(CXXLINK) $(test_metadata_OBJECTS) $(test_metadata_LDADD) $(LIBS)
+ test_monitor$(EXEEXT): $(test_monitor_OBJECTS) $(test_monitor_DEPENDENCIES) $(EXTRA_test_monitor_DEPENDENCIES) 
+ 	@rm -f test_monitor$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_monitor_OBJECTS) $(test_monitor_LDADD) $(LIBS)
+@@ -856,9 +877,6 @@
+ test_reqrep_tipc$(EXEEXT): $(test_reqrep_tipc_OBJECTS) $(test_reqrep_tipc_DEPENDENCIES) $(EXTRA_test_reqrep_tipc_DEPENDENCIES) 
+ 	@rm -f test_reqrep_tipc$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_reqrep_tipc_OBJECTS) $(test_reqrep_tipc_LDADD) $(LIBS)
+-test_resource$(EXEEXT): $(test_resource_OBJECTS) $(test_resource_DEPENDENCIES) $(EXTRA_test_resource_DEPENDENCIES) 
+-	@rm -f test_resource$(EXEEXT)
+-	$(AM_V_CXXLD)$(CXXLINK) $(test_resource_OBJECTS) $(test_resource_LDADD) $(LIBS)
+ test_router_handover$(EXEEXT): $(test_router_handover_OBJECTS) $(test_router_handover_DEPENDENCIES) $(EXTRA_test_router_handover_DEPENDENCIES) 
+ 	@rm -f test_router_handover$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_router_handover_OBJECTS) $(test_router_handover_LDADD) $(LIBS)
+@@ -910,6 +928,9 @@
+ test_stream_empty$(EXEEXT): $(test_stream_empty_OBJECTS) $(test_stream_empty_DEPENDENCIES) $(EXTRA_test_stream_empty_DEPENDENCIES) 
+ 	@rm -f test_stream_empty$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_stream_empty_OBJECTS) $(test_stream_empty_LDADD) $(LIBS)
++test_stream_timeout$(EXEEXT): $(test_stream_timeout_OBJECTS) $(test_stream_timeout_DEPENDENCIES) $(EXTRA_test_stream_timeout_DEPENDENCIES) 
++	@rm -f test_stream_timeout$(EXEEXT)
++	$(AM_V_CXXLD)$(CXXLINK) $(test_stream_timeout_OBJECTS) $(test_stream_timeout_LDADD) $(LIBS)
+ test_sub_forward$(EXEEXT): $(test_sub_forward_OBJECTS) $(test_sub_forward_DEPENDENCIES) $(EXTRA_test_sub_forward_DEPENDENCIES) 
+ 	@rm -f test_sub_forward$(EXEEXT)
+ 	$(AM_V_CXXLD)$(CXXLINK) $(test_sub_forward_OBJECTS) $(test_sub_forward_LDADD) $(LIBS)
+@@ -936,6 +957,7 @@
+ 	-rm -f *.tab.c
+ 
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_abstract_ipc.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bind_src_address.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_conflate.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_connect_delay_tipc.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_connect_resolve.Po@am__quote@
+@@ -944,9 +966,9 @@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_ctx_options.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_diffserv.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_disconnect_inproc.Po@am__quote@
 -@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_filter_ipc.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_fork.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_hwm.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_id2fd.Po@am__quote@
  @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_immediate.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_inproc_connect.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_invalid_rep.Po@am__quote@
+@@ -955,6 +977,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_issue_566.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_last_endpoint.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_many_sockets.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_metadata.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_monitor.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_msg_flags.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_pair_inproc.Po@am__quote@
+@@ -971,7 +994,6 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_reqrep_ipc.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_reqrep_tcp.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_reqrep_tipc.Po@am__quote@
+-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_resource.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_router_handover.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_router_mandatory.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_router_mandatory_tipc.Po@am__quote@
+@@ -989,6 +1011,7 @@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stream.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stream_disconnect.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stream_empty.Po@am__quote@
++@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_stream_timeout.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_sub_forward.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_sub_forward_tipc.Po@am__quote@
+ @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_system.Po@am__quote@
