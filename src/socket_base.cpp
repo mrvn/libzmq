@@ -1305,10 +1305,10 @@ void zmq::socket_base_t::event_close_failed (const std::string &addr_, int err_)
         monitor_event (ZMQ_EVENT_CLOSE_FAILED, err_, addr_);
 }
 
-void zmq::socket_base_t::event_disconnected (const std::string &addr_, int fd_)
+void zmq::socket_base_t::event_disconnected (const std::string &addr_, int fd_, blob_t identity_)
 {
     if (monitor_events & ZMQ_EVENT_DISCONNECTED)
-        monitor_event (ZMQ_EVENT_DISCONNECTED, fd_, addr_);
+        monitor_event (ZMQ_EVENT_DISCONNECTED, fd_, addr_, identity_);
 }
 
 //  Send a monitor event
@@ -1326,6 +1326,29 @@ void zmq::socket_base_t::monitor_event (int event_, int value_, const std::strin
         //  Send address in second frame
         zmq_msg_init_size (&msg, addr_.size());
         memcpy (zmq_msg_data (&msg), addr_.c_str (), addr_.size ());
+        zmq_sendmsg (monitor_socket, &msg, 0);
+    }
+}
+
+void zmq::socket_base_t::monitor_event (int event_, int value_, const std::string &addr_, blob_t identity_)
+{
+    if (monitor_socket) {
+        //  Send event in first frame
+        zmq_msg_t msg;
+        zmq_msg_init_size (&msg, 6);
+        uint8_t *data = (uint8_t *) zmq_msg_data (&msg);
+        *(uint16_t *) (data + 0) = (uint16_t) event_;
+        *(uint32_t *) (data + 2) = (uint32_t) value_;
+        zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
+
+        //  Send address in second frame
+        zmq_msg_init_size (&msg, addr_.size());
+        memcpy (zmq_msg_data (&msg), addr_.c_str (), addr_.size ());
+        zmq_sendmsg (monitor_socket, &msg, ZMQ_SNDMORE);
+
+	// Send identity in third frame
+        zmq_msg_init_size (&msg, identity_.size());
+        memcpy (zmq_msg_data (&msg), identity_.c_str (), identity_.size ());
         zmq_sendmsg (monitor_socket, &msg, 0);
     }
 }

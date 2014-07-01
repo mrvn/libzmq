@@ -198,6 +198,7 @@ namespace zmq
         zmq::socket_base_t *socket;
 
         std::string peer_address;
+        blob_t peer_identity;
 
         stream_engine_t (const stream_engine_t&);
         const stream_engine_t &operator = (const stream_engine_t&);

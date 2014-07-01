@@ -120,6 +120,7 @@ namespace zmq
         void event_closed (const std::string &addr_, int fd_);
         void event_close_failed (const std::string &addr_, int fd_);
         void event_disconnected (const std::string &addr_, int fd_);
+        void event_disconnected (const std::string &addr_, int fd_, blob_t identity_); 
 
     protected:
 
@@ -164,6 +165,7 @@ namespace zmq
 
         // Socket event data dispath
         void monitor_event (int event_, int value_, const std::string& addr_);
+        void monitor_event (int event_, int value_, const std::string& addr_, blob_t identity_);
 
         // Monitor socket cleanup
         void stop_monitor ();

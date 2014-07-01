@@ -673,6 +673,11 @@ int zmq::stream_engine_t::identity_msg (msg_t *msg_)
 
 int zmq::stream_engine_t::process_identity_msg (msg_t *msg_)
 {
+    peer_identity = blob_t(msg_->size(), 0);
+    fprintf(stderr, "msg_->size() = %ld, peer_identity = %ld\n",
+	    msg_->size(), peer_identity.length());
+    memcpy (&peer_identity[0], msg_->data(), msg_->size());
+
     if (options.recv_identity) {
         msg_->set_flags (msg_t::identity);
         int rc = session->push_msg (msg_);
@@ -889,7 +894,8 @@ void zmq::stream_engine_t::error (error_reason_t reason)
         terminator.close();
     }
     zmq_assert (session);
-    socket->event_disconnected (endpoint, s);
+    
+    socket->event_disconnected (endpoint, s, peer_identity);
     session->flush ();
     session->engine_error (reason);
     unplug ();
