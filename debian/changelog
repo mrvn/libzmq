@@ -1,15 +1,8 @@
-zeromq (4.1~git+20140331-2) stable; urgency=low
+zeromq (4.1~git+20140709-1) stable; urgency=low
 
-  * Pull from git on 2014.03.31
+  * Rebase to git from 2014.07.09
 
- -- Goswin von Brederlow <brederlo@q-leap.de>  Mon, 31 Mar 2014 11:40:35 +0200
-
-zeromq (4.1~git+2014017-1) stasble; urgency=low
-
-  * Pull from git on 2014.01.17
-  * Add notification of peer connection for ZMQ_STREAM sockets.
-
- -- Goswin von Brederlow <goswin-v-b@web.de>  Fri, 17 Jan 2014 15:23:09 +0100
+ -- Goswin von Brederlow <brederlo@q-leap.de>  Wed, 09 Jul 2014 12:43:24 +0200
 
 zeromq (4.0.3-1) unstable; urgency=low
 
