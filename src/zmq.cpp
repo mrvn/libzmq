@@ -621,11 +621,18 @@ int zmq_msg_more (zmq_msg_t *msg_)
     return zmq_msg_get (msg_, ZMQ_MORE);
 }
 
+int zmq_msg_event (zmq_msg_t *msg_)
+{
+    return zmq_msg_get (msg_, ZMQ_EVENT);
+}
+
 int zmq_msg_get (zmq_msg_t *msg_, int property_)
 {
     switch (property_) {
         case ZMQ_MORE:
             return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::more)? 1: 0;
+        case ZMQ_EVENT:
+            return (((zmq::msg_t*) msg_)->flags () & zmq::msg_t::event)? 1: 0;
         case ZMQ_SRCFD:
             // warning: int64_t to int
             return ((zmq::msg_t*) msg_)->fd ();

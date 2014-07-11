@@ -136,3 +136,4 @@ debian/libzmq3-dbg
 debian/libzmq3-dev
 debian/libzmq3
 debian/tmp
+tests/test_event_msgs

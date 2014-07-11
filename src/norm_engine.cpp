@@ -7,6 +7,8 @@
 #include "session_base.hpp"
 #include "v2_protocol.hpp"
 
+#include <stdio.h>
+
 zmq::norm_engine_t::norm_engine_t(io_thread_t*     parent_,
                                   const options_t& options_)
  : io_object_t(parent_), zmq_session(NULL), options(options_),  
@@ -229,7 +231,7 @@ void zmq::norm_engine_t::plug (io_thread_t* io_thread_, session_base_t *session_
     norm_descriptor_handle = add_fd(normDescriptor);
     // Set POLLIN for notification of pending NormEvents
     set_pollin(norm_descriptor_handle); 
-    
+
     if (is_sender) send_data();
     
 }  // end zmq::norm_engine_t::init()

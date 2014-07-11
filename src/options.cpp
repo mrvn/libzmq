@@ -56,7 +56,8 @@ zmq::options_t::options_t () :
     gss_plaintext (false),
     socket_id (0),
     conflate (false),
-    handshake_ivl (30000)
+    handshake_ivl (30000),
+    event_msgs (0)
 {
 }
 
@@ -455,6 +456,13 @@ int zmq::options_t::setsockopt (int option_, const void *optval_,
         case ZMQ_HANDSHAKE_IVL:
             if (is_int && value >= 0) {
                 handshake_ivl = value;
+                return 0;
+            }
+            break;
+
+        case ZMQ_EVENT_MSGS:
+            if (is_int && value >= 0) {
+                event_msgs = value;
                 return 0;
             }
             break;

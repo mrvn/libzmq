@@ -307,10 +307,12 @@ ZMQ_EXPORT const char *zmq_msg_gets (zmq_msg_t *msg, const char *property);
 #define ZMQ_HANDSHAKE_IVL 66
 #define ZMQ_IDENTITY_FD 67
 #define ZMQ_SOCKS_PROXY 68
+#define ZMQ_EVENT_MSGS 69
 
 /*  Message options                                                           */
 #define ZMQ_MORE 1
 #define ZMQ_SRCFD 2
+#define ZMQ_EVENT 3
 
 /*  Send/recv options.                                                        */
 #define ZMQ_DONTWAIT 1

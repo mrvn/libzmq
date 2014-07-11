@@ -179,6 +179,8 @@ namespace zmq
         //  close socket.  Default is 30 secs.  0 means no handshake timeout.
         int handshake_ivl;
 
+        // Bitmask of events to be send as inline messages
+        int event_msgs;
     };
 }
 

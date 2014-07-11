@@ -22,6 +22,7 @@ noinst_PROGRAMS = test_system \
                   test_router_mandatory \
                   test_router_handover \
                   test_probe_router \
+                  test_event_msgs \
                   test_stream \
                   test_stream_empty \
                   test_stream_disconnect \
@@ -57,8 +58,8 @@ if !ON_MINGW
 noinst_PROGRAMS += test_shutdown_stress \
                    test_pair_ipc \
                    test_reqrep_ipc \
-                   test_timeo \
-                   test_filter_ipc
+                   test_timeo
+#                   test_filter_ipc
 if HAVE_FORK
 noinst_PROGRAMS += test_fork
 endif
@@ -137,7 +138,7 @@ test_timeo_SOURCES = test_timeo.cpp
 if HAVE_FORK
 test_fork_SOURCES = test_fork.cpp
 endif
-test_filter_ipc_SOURCES = test_filter_ipc.cpp
+#test_filter_ipc_SOURCES = test_filter_ipc.cpp
 endif
 if BUILD_TIPC
 test_connect_delay_tipc_SOURCES = test_connect_delay_tipc.cpp

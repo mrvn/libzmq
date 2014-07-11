@@ -215,6 +215,18 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         outpos [outsize++] = 0x7f;
     }
 
+    if (options.event_msgs && ZMQ_EVENT_CONNECTED) {
+      fprintf(stderr, "zmq::stream_engine_t::plug(): ZMQ_EVENT_CONNECTED\n");
+      // send an initial 0-length message to the
+      // application so that it knows a peer has connected.
+      msg_t connector;
+      connector.init();
+      connector.set_flags(ZMQ_EVENT);
+      push_msg_to_session (&connector);
+      connector.close();
+      session->flush ();
+    }
+
     set_pollin (handle);
     set_pollout (handle);
     //  Flush all the data that may have been already received downstream.
@@ -673,6 +685,7 @@ int zmq::stream_engine_t::identity_msg (msg_t *msg_)
 
 int zmq::stream_engine_t::process_identity_msg (msg_t *msg_)
 {
+  fprintf(stderr, "zmq::stream_engine_t::process_identity_msg()\n");
     if (options.recv_identity) {
         msg_->set_flags (msg_t::identity);
         int rc = session->push_msg (msg_);
@@ -800,6 +813,7 @@ int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
 
 int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 {
+  fprintf(stderr, "%s: 0x%08x\n", __PRETTY_FUNCTION__, *(int*)msg_->data());
     return session->push_msg (msg_);
 }
 
