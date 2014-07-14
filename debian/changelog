@@ -1,4 +1,4 @@
-zeromq (4.1~git+20140709-1) stable; urgency=low
+zeromq (4.1+git+20140709-1) stable; urgency=low
 
   * Rebase to git from 2014.07.09
 
