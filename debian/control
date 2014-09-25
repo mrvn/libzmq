@@ -9,10 +9,12 @@ Build-Depends: debhelper (>= 9),
 Standards-Version: 3.9.4
 Homepage: http://www.zeromq.org/
 
-Package: libzmq3
+Package: libzmq4
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Pre-Depends: ${misc:Pre-Depends}
+Breaks: libzmq3
+Replaces: libzmq3
 Multi-Arch: same
 Description: lightweight messaging kernel (shared library)
  ØMQ is a library which extends the standard socket interfaces with features
@@ -24,11 +26,13 @@ Description: lightweight messaging kernel (shared library)
  .
  This package contains the ZeroMQ shared library (version 4.0).
 
-Package: libzmq3-dev
+Package: libzmq4-dev
 Architecture: any
 Section: libdevel
-Depends: libzmq3 (= ${binary:Version}), ${misc:Depends}
+Depends: libzmq4 (= ${binary:Version}), ${misc:Depends}
 Conflicts: libzmq-dev
+Breaks: libzmq3-dev
+Replaces: libzmq3-dev
 Multi-Arch: same
 Description: lightweight messaging kernel (development files)
  ØMQ is a library which extends the standard socket interfaces with features
@@ -40,11 +44,13 @@ Description: lightweight messaging kernel (development files)
  .
  This package contains the ZeroMQ development libraries and header files.
 
-Package: libzmq3-dbg
+Package: libzmq4-dbg
 Architecture: any
 Priority: extra
 Section: debug
-Depends: libzmq3 (= ${binary:Version}), ${misc:Depends}
+Depends: libzmq4 (= ${binary:Version}), ${misc:Depends}
+Breaks: libzmq3-dbg
+Replaces: libzmq3-dbg
 Multi-Arch: same
 Description: lightweight messaging kernel (debugging symbols)
  ØMQ is a library which extends the standard socket interfaces with features
