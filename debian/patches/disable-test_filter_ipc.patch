@@ -5,9 +5,11 @@ Last-Update: 2014-07-09
 
 ---
 
---- zeromq-4.1~git+20140709.orig/tests/Makefile.am
-+++ zeromq-4.1~git+20140709/tests/Makefile.am
-@@ -57,8 +57,8 @@ if !ON_MINGW
+Index: libzmq.git+mrvn/tests/Makefile.am
+===================================================================
+--- libzmq.git+mrvn.orig/tests/Makefile.am	2014-09-25 10:23:19.128530493 +0200
++++ libzmq.git+mrvn/tests/Makefile.am	2014-09-25 10:24:36.000000000 +0200
+@@ -60,8 +60,8 @@
  noinst_PROGRAMS += test_shutdown_stress \
                     test_pair_ipc \
                     test_reqrep_ipc \
@@ -18,7 +20,7 @@ Last-Update: 2014-07-09
  if HAVE_FORK
  noinst_PROGRAMS += test_fork
  endif
-@@ -137,7 +137,7 @@ test_timeo_SOURCES = test_timeo.cpp
+@@ -143,7 +143,7 @@
  if HAVE_FORK
  test_fork_SOURCES = test_fork.cpp
  endif
