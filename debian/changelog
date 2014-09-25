@@ -1,6 +1,8 @@
-zeromq (4.1~git+20140709-1) stable; urgency=low
+zeromq (4.1~git+20140925-1ql1) stable; urgency=low
 
-  * Rebase to git from 2014.07.09
+  * Rebase to git from 2014.09.25
+    + Security fix: curve messages can be replayed
+    + Security fix: security can be downgraded
 
  -- Goswin von Brederlow <brederlo@q-leap.de>  Wed, 09 Jul 2014 12:43:24 +0200
 
