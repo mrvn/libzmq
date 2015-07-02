@@ -1,17 +1,27 @@
 /*
-    Copyright (c) 2007-2014 Contributors as noted in the AUTHORS file
+    Copyright (c) 2007-2015 Contributors as noted in the AUTHORS file
 
-    This file is part of 0MQ.
+    This file is part of libzmq, the ZeroMQ core engine in C++.
 
-    0MQ is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by
-    the Free Software Foundation; either version 3 of the License, or
+    libzmq is free software; you can redistribute it and/or modify it under
+    the terms of the GNU Lesser General Public License (LGPL) as published
+    by the Free Software Foundation; either version 3 of the License, or
     (at your option) any later version.
 
-    0MQ is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    As a special exception, the Contributors give you permission to link
+    this library with independent modules to produce an executable,
+    regardless of the license terms of these independent modules, and to
+    copy and distribute the resulting executable under terms of your choice,
+    provided that you also meet, for each linked independent module, the
+    terms and conditions of the license of that module. An independent
+    module is a module which is not derived from or based on this library.
+    If you modify this library, you must extend this exception to your
+    version of the library.
+
+    libzmq is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
+    License for more details.
 
     You should have received a copy of the GNU Lesser General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -192,13 +202,22 @@ void zmq::stream_engine_t::plug (io_thread_t *io_thread_,
         handshaking = false;
 
         next_msg = &stream_engine_t::pull_msg_from_session;
-        process_msg = &stream_engine_t::push_msg_to_session;
+        process_msg = &stream_engine_t::push_raw_msg_to_session;
+
+        if (!peer_address.empty()) {
+            //  Compile metadata.
+            typedef metadata_t::dict_t properties_t;
+            properties_t properties;
+            properties.insert(std::make_pair("Peer-Address", peer_address));
+            zmq_assert (metadata == NULL);
+            metadata = new (std::nothrow) metadata_t (properties);
+        }
 
         //  For raw sockets, send an initial 0-length message to the
         // application so that it knows a peer has connected.
         msg_t connector;
         connector.init();
-        push_msg_to_session (&connector);
+        push_raw_msg_to_session (&connector);
         connector.close();
         session->flush ();
     }
@@ -534,6 +553,12 @@ bool zmq::stream_engine_t::handshake ()
     //  Is the peer using ZMTP/1.0 with no revision number?
     //  If so, we send and receive rest of identity message
     if (greeting_recv [0] != 0xff || !(greeting_recv [9] & 0x01)) {
+        if (session->zap_enabled ()) {
+           // reject ZMTP 1.0 connections if ZAP is enabled
+           error (protocol_error);
+           return false;
+        }
+
         encoder = new (std::nothrow) v1_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
@@ -575,6 +600,12 @@ bool zmq::stream_engine_t::handshake ()
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_1_0) {
+        if (session->zap_enabled ()) {
+           // reject ZMTP 1.0 connections if ZAP is enabled
+           error (protocol_error);
+           return false;
+        }
+
         encoder = new (std::nothrow) v1_encoder_t (
             out_batch_size);
         alloc_assert (encoder);
@@ -585,6 +616,12 @@ bool zmq::stream_engine_t::handshake ()
     }
     else
     if (greeting_recv [revision_pos] == ZMTP_2_0) {
+        if (session->zap_enabled ()) {
+           // reject ZMTP 2.0 connections if ZAP is enabled
+           error (protocol_error);
+           return false;
+        }
+
         encoder = new (std::nothrow) v2_encoder_t (out_batch_size);
         alloc_assert (encoder);
 
@@ -776,21 +813,18 @@ void zmq::stream_engine_t::mechanism_ready ()
     properties_t properties;
     properties_t::const_iterator it;
 
+    //  If we have a peer_address, add it to metadata
+    if (!peer_address.empty()) {
+        properties.insert(std::make_pair("Peer-Address", peer_address));
+    }
+
     //  Add ZAP properties.
     const properties_t& zap_properties = mechanism->get_zap_properties ();
-    it = zap_properties.begin ();
-    while (it != zap_properties.end ()) {
-        properties.insert (properties_t::value_type (it->first, it->second));
-        ++it;
-    }
+    properties.insert(zap_properties.begin (), zap_properties.end ());
 
     //  Add ZMTP properties.
     const properties_t& zmtp_properties = mechanism->get_zmtp_properties ();
-    it = zmtp_properties.begin ();
-    while (it != zmtp_properties.end ()) {
-        properties.insert (properties_t::value_type (it->first, it->second));
-        ++it;
-    }
+    properties.insert(zmtp_properties.begin (), zmtp_properties.end ());
 
     zmq_assert (metadata == NULL);
     if (!properties.empty ())
@@ -805,6 +839,12 @@ int zmq::stream_engine_t::pull_msg_from_session (msg_t *msg_)
 int zmq::stream_engine_t::push_msg_to_session (msg_t *msg_)
 {
     return session->push_msg (msg_);
+}
+
+int zmq::stream_engine_t::push_raw_msg_to_session (msg_t *msg_) {
+    if (metadata)
+        msg_->set_metadata(metadata);
+    return push_msg_to_session(msg_);
 }
 
 int zmq::stream_engine_t::write_credential (msg_t *msg_)
