@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.9" />
+<meta name="generator" content="AsciiDoc 8.6.6" />
 <title>zmq_tipc(7)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,15 +87,9 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-.monospaced, code, pre {
-  font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
-  color: navy;
+pre {
   padding: 0;
   margin: 0;
-}
-pre {
-  white-space: pre-wrap;
 }
 
 #author {
@@ -225,7 +219,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; vertical-align: text-bottom; }
+span.image img { border-style: none; }
 a.image:visited { color: white; }
 
 dl {
@@ -355,7 +349,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -413,13 +407,17 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
-div.unbreakable { page-break-inside: avoid; }
-
 
 /*
  * xhtml11 specific
  *
  * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -453,6 +451,12 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -533,8 +537,6 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
-
-
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -579,7 +581,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -608,7 +610,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div'
+    if (entry.nodeName == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -654,7 +656,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -753,15 +755,15 @@ zmq_tipc(7) Manual Page
 <div class="sect1">
 <h2 id="_addressing">ADDRESSING</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>A ØMQ endpoint is a string consisting of a <em>transport</em><code>://</code> followed by an
+<div class="paragraph"><p>A ØMQ endpoint is a string consisting of a <em>transport</em><tt>://</tt> followed by an
 <em>address</em>. The <em>transport</em> specifies the underlying protocol to use. The
 <em>address</em> specifies the transport-specific address to connect to.</p></div>
-<div class="paragraph"><p>For the TIPC transport, the transport is <code>tipc</code>, and the meaning of the
+<div class="paragraph"><p>For the TIPC transport, the transport is <tt>tipc</tt>, and the meaning of the
 <em>address</em> part is defined below.</p></div>
 <div class="paragraph"><p>Assigning a port name to a socket</p></div>
 <div class="listingblock">
 <div class="content">
-<pre><code>When assigning a port name to a socket using _zmq_bind()_ with the 'tipc'
+<pre><tt>When assigning a port name to a socket using _zmq_bind()_ with the 'tipc'
 transport, the 'endpoint' is defined in the form:
 {type, lower, upper}
 
@@ -773,7 +775,7 @@ cause connection requests to be distributed over these in a round-robin
 manner.
 
 
-Connecting a socket</code></pre>
+Connecting a socket</tt></pre>
 </div></div>
 <div class="paragraph"><p>When connecting a socket to a peer address using <em>zmq_connect()</em> with the <em>tipc</em>
 transport, the <em>endpoint</em> shall be interpreted as a service ID, followed by a
@@ -788,19 +790,19 @@ for the endpoint to be valid.</p></div>
 <div class="listingblock">
 <div class="title">Assigning a local address to a socket</div>
 <div class="content">
-<pre><code>//  Publish TIPC service ID 5555
+<pre><tt>//  Publish TIPC service ID 5555
 rc = zmq_bind(socket, "tipc://{5555,0,0}");
 assert (rc == 0);
 //  Publish TIPC service ID 5555 with a service range of 0-100
 rc = zmq_bind(socket, "tipc://{5555,0,100}");
-assert (rc == 0);</code></pre>
+assert (rc == 0);</tt></pre>
 </div></div>
 <div class="listingblock">
 <div class="title">Connecting a socket</div>
 <div class="content">
-<pre><code>//  Connect to service 5555 instance id 50
+<pre><tt>//  Connect to service 5555 instance id 50
 rc = zmq_connect(socket, "tipc://{5555,50}");
-assert (rc == 0);</code></pre>
+assert (rc == 0);</tt></pre>
 </div></div>
 </div>
 </div>
@@ -827,8 +829,8 @@ read the ØMQ Contribution Policy at <a href="http://www.zeromq.org/docs:contrib
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-ØMQ 4.1.1<br />
-Last updated 2014-10-14 16:07:36 CEST
+ØMQ 4.1.2<br />
+Last updated 2014-10-16 06:43:15 CEST
 </div>
 </div>
 </body>

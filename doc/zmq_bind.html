@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.9" />
+<meta name="generator" content="AsciiDoc 8.6.6" />
 <title>zmq_bind(3)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,15 +87,9 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-.monospaced, code, pre {
-  font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
-  color: navy;
+pre {
   padding: 0;
   margin: 0;
-}
-pre {
-  white-space: pre-wrap;
 }
 
 #author {
@@ -225,7 +219,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; vertical-align: text-bottom; }
+span.image img { border-style: none; }
 a.image:visited { color: white; }
 
 dl {
@@ -355,7 +349,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -413,13 +407,17 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
-div.unbreakable { page-break-inside: avoid; }
-
 
 /*
  * xhtml11 specific
  *
  * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -453,6 +451,12 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -533,8 +537,6 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
-
-
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -579,7 +581,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -608,7 +610,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div'
+    if (entry.nodeName == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -654,7 +656,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -755,7 +757,7 @@ zmq_bind(3) Manual Page
 <div class="sectionbody">
 <div class="paragraph"><p>The <em>zmq_bind()</em> function binds the <em>socket</em> to a local <em>endpoint</em> and then
 accepts incoming connections on that endpoint.</p></div>
-<div class="paragraph"><p>The <em>endpoint</em> is a string consisting of a <em>transport</em><code>://</code> followed by an
+<div class="paragraph"><p>The <em>endpoint</em> is a string consisting of a <em>transport</em><tt>://</tt> followed by an
 <em>address</em>. The <em>transport</em> specifies the underlying protocol to use. The
 <em>address</em> specifies the transport-specific address to bind to.</p></div>
 <div class="paragraph"><p>ØMQ provides the the following transports:</p></div>
@@ -825,7 +827,7 @@ By contrast, following a libzmq:zmq_connect[3], the socket enters the <em>ready<
 <h2 id="_return_value">RETURN VALUE</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>The <em>zmq_bind()</em> function returns zero if successful. Otherwise it returns
-<code>-1</code> and sets <em>errno</em> to one of the values defined below.</p></div>
+<tt>-1</tt> and sets <em>errno</em> to one of the values defined below.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -913,7 +915,7 @@ No I/O thread is available to accomplish the task.
 <div class="listingblock">
 <div class="title">Binding a publisher socket to an in-process and a TCP transport</div>
 <div class="content">
-<pre><code>/* Create a ZMQ_PUB socket */
+<pre><tt>/* Create a ZMQ_PUB socket */
 void *socket = zmq_socket (context, ZMQ_PUB);
 assert (socket);
 /* Bind it to a in-process transport with the address 'my_publisher' */
@@ -921,7 +923,7 @@ int rc = zmq_bind (socket, "inproc://my_publisher");
 assert (rc == 0);
 /* Bind it to a TCP transport on port 5555 of the 'eth0' interface */
 rc = zmq_bind (socket, "tcp://eth0:5555");
-assert (rc == 0);</code></pre>
+assert (rc == 0);</tt></pre>
 </div></div>
 </div>
 </div>
@@ -944,8 +946,8 @@ read the ØMQ Contribution Policy at <a href="http://www.zeromq.org/docs:contrib
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-ØMQ 4.1.1<br />
-Last updated 2014-10-14 16:07:36 CEST
+ØMQ 4.1.2<br />
+Last updated 2014-10-16 06:43:15 CEST
 </div>
 </div>
 </body>

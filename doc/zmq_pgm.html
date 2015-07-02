@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 <head>
 <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
-<meta name="generator" content="AsciiDoc 8.6.9" />
+<meta name="generator" content="AsciiDoc 8.6.6" />
 <title>zmq_pgm(7)</title>
 <style type="text/css">
 /* Shared CSS for AsciiDoc xhtml11 and html5 backends */
@@ -87,15 +87,9 @@ ul, ol, li > p {
 ul > li     { color: #aaa; }
 ul > li > * { color: black; }
 
-.monospaced, code, pre {
-  font-family: "Courier New", Courier, monospace;
-  font-size: inherit;
-  color: navy;
+pre {
   padding: 0;
   margin: 0;
-}
-pre {
-  white-space: pre-wrap;
 }
 
 #author {
@@ -225,7 +219,7 @@ div.exampleblock > div.content {
 }
 
 div.imageblock div.content { padding-left: 0; }
-span.image img { border-style: none; vertical-align: text-bottom; }
+span.image img { border-style: none; }
 a.image:visited { color: white; }
 
 dl {
@@ -355,7 +349,7 @@ div.colist td img {
   margin-bottom: 0.1em;
 }
 
-div.toclevel0, div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
   margin-top: 0;
   margin-bottom: 0;
 }
@@ -413,13 +407,17 @@ span.underline { text-decoration: underline; }
 span.overline { text-decoration: overline; }
 span.line-through { text-decoration: line-through; }
 
-div.unbreakable { page-break-inside: avoid; }
-
 
 /*
  * xhtml11 specific
  *
  * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 div.tableblock {
   margin-top: 1.0em;
@@ -453,6 +451,12 @@ div.tableblock > table[frame="vsides"] {
  * html5 specific
  *
  * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
 
 table.tableblock {
   margin-top: 1.0em;
@@ -533,8 +537,6 @@ body.manpage div.sectionbody {
 @media print {
   body.manpage div#toc { display: none; }
 }
-
-
 </style>
 <script type="text/javascript">
 /*<![CDATA[*/
@@ -579,7 +581,7 @@ toc: function (toclevels) {
 
   function tocEntries(el, toclevels) {
     var result = new Array;
-    var re = new RegExp('[hH]([1-'+(toclevels+1)+'])');
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
     // Function that scans the DOM tree for header elements (the DOM2
     // nodeIterator API would be a better technique but not supported by all
     // browsers).
@@ -608,7 +610,7 @@ toc: function (toclevels) {
   var i;
   for (i = 0; i < toc.childNodes.length; i++) {
     var entry = toc.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div'
+    if (entry.nodeName == 'div'
      && entry.getAttribute("class")
      && entry.getAttribute("class").match(/^toclevel/))
       tocEntriesToRemove.push(entry);
@@ -654,7 +656,7 @@ footnotes: function () {
   var entriesToRemove = [];
   for (i = 0; i < noteholder.childNodes.length; i++) {
     var entry = noteholder.childNodes[i];
-    if (entry.nodeName.toLowerCase() == 'div' && entry.getAttribute("class") == "footnote")
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
       entriesToRemove.push(entry);
   }
   for (i = 0; i < entriesToRemove.length; i++) {
@@ -780,11 +782,11 @@ not require any special privileges.</td>
 <div class="sect1">
 <h2 id="_addressing">ADDRESSING</h2>
 <div class="sectionbody">
-<div class="paragraph"><p>A ØMQ endpoint is a string consisting of a <em>transport</em><code>://</code> followed by an
+<div class="paragraph"><p>A ØMQ endpoint is a string consisting of a <em>transport</em><tt>://</tt> followed by an
 <em>address</em>. The <em>transport</em> specifies the underlying protocol to use. The
 <em>address</em> specifies the transport-specific address to connect to.</p></div>
-<div class="paragraph"><p>For the PGM transport, the transport is <code>pgm</code>, and for the EPGM protocol the
-transport is <code>epgm</code>. The meaning of the <em>address</em> part is defined below.</p></div>
+<div class="paragraph"><p>For the PGM transport, the transport is <tt>pgm</tt>, and for the EPGM protocol the
+transport is <tt>epgm</tt>. The meaning of the <em>address</em> part is defined below.</p></div>
 <div class="sect2">
 <h3 id="_connecting_a_socket">Connecting a socket</h3>
 <div class="paragraph"><p>When connecting a socket to a peer address using <em>zmq_connect()</em> with the <em>pgm</em>
@@ -836,14 +838,14 @@ of data consists of ØMQ messages encapsulated in <em>frames</em> as described i
 used by ØMQ:</p></div>
 <div class="literalblock">
 <div class="content">
-<pre><code>datagram               = (offset data)
+<pre><tt>datagram               = (offset data)
 offset                 = 2OCTET
-data                   = *OCTET</code></pre>
+data                   = *OCTET</tt></pre>
 </div></div>
 <div class="paragraph"><p>In order for late joining consumers to be able to identify message boundaries,
 each PGM datagram payload starts with a 16-bit unsigned integer in network byte
 order specifying either the offset of the first message <em>frame</em> in the datagram
-or containing the value <code>0xFFFF</code> if the datagram contains solely an
+or containing the value <tt>0xFFFF</tt> if the datagram contains solely an
 intermediate part of a larger message.</p></div>
 <div class="paragraph"><p>Note that offset specifies where the first message begins rather than the first
 message part. Thus, if there are trailing message parts at the beginning of
@@ -852,15 +854,15 @@ in the packet.</p></div>
 <div class="paragraph"><p>The following diagram illustrates the layout of a single PGM datagram payload:</p></div>
 <div class="literalblock">
 <div class="content">
-<pre><code>+------------------+----------------------+
+<pre><tt>+------------------+----------------------+
 | offset (16 bits) |         data         |
-+------------------+----------------------+</code></pre>
++------------------+----------------------+</tt></pre>
 </div></div>
 <div class="paragraph"><p>The following diagram further illustrates how three example ØMQ frames are laid
 out in consecutive PGM datagram payloads:</p></div>
 <div class="literalblock">
 <div class="content">
-<pre><code>First datagram payload
+<pre><tt>First datagram payload
 +--------------+-------------+---------------------+
 | Frame offset |   Frame 1   |   Frame 2, part 1   |
 |    0x0000    | (Message 1) | (Message 2, part 1) |
@@ -876,7 +878,7 @@ Third datagram payload
 +--------------+----------------------------+-------------+
 | Frame offset |   Frame 2, final 8 bytes   |   Frame 3   |
 | 0x0008       | (Message 2, final 8 bytes) | (Message 3) |
-+--------------+----------------------------+-------------+</code></pre>
++--------------+----------------------------+-------------+</tt></pre>
 </div></div>
 </div>
 </div>
@@ -887,7 +889,7 @@ Third datagram payload
 <div class="listingblock">
 <div class="title">Connecting a socket</div>
 <div class="content">
-<pre><code>//  Connecting to the multicast address 239.192.1.1, port 5555,
+<pre><tt>//  Connecting to the multicast address 239.192.1.1, port 5555,
 //  using the first Ethernet network interface on Linux
 //  and the Encapsulated PGM protocol
 rc = zmq_connect(socket, "epgm://eth0;239.192.1.1:5555");
@@ -896,7 +898,7 @@ assert (rc == 0);
 //  using the network interface with the address 192.168.1.1
 //  and the standard PGM protocol
 rc = zmq_connect(socket, "pgm://192.168.1.1;239.192.1.1:5555");
-assert (rc == 0);</code></pre>
+assert (rc == 0);</tt></pre>
 </div></div>
 </div>
 </div>
@@ -922,8 +924,8 @@ read the ØMQ Contribution Policy at <a href="http://www.zeromq.org/docs:contrib
 <div id="footnotes"><hr /></div>
 <div id="footer">
 <div id="footer-text">
-ØMQ 4.1.1<br />
-Last updated 2014-10-14 16:07:36 CEST
+ØMQ 4.1.2<br />
+Last updated 2014-10-16 06:43:15 CEST
 </div>
 </div>
 </body>
