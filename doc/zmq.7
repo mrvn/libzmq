@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: zmq
 .\"    Author: [see the "AUTHORS" section]
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 06/02/2015
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 11/03/2014
 .\"    Manual: 0MQ Manual
 .\"    Source: 0MQ 4.1.0
 .\"  Language: English
 .\"
-.TH "ZMQ" "7" "06/02/2015" "0MQ 4\&.1\&.0" "0MQ Manual"
+.TH "ZMQ" "7" "11/03/2014" "0MQ 4\&.1\&.0" "0MQ Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,17 +45,22 @@ Before using any 0MQ library functions you must create a 0MQ \fIcontext\fR\&. Wh
 .PP
 Create a new 0MQ context
 .RS 4
+
 \fBzmq_ctx_new\fR(3)
 .RE
 .PP
 Work with context properties
 .RS 4
-\fBzmq_ctx_set\fR(3)\fBzmq_ctx_get\fR(3)
+
+\fBzmq_ctx_set\fR(3)
+\fBzmq_ctx_get\fR(3)
 .RE
 .PP
 Destroy a 0MQ context
 .RS 4
-\fBzmq_ctx_shutdown\fR(3)\fBzmq_ctx_term\fR(3)
+
+\fBzmq_ctx_shutdown\fR(3)
+\fBzmq_ctx_term\fR(3)
 .RE
 .sp
 .it 1 an-trap
@@ -89,32 +94,46 @@ The following functions are provided to work with messages:
 .PP
 Initialise a message
 .RS 4
-\fBzmq_msg_init\fR(3)\fBzmq_msg_init_size\fR(3)\fBzmq_msg_init_data\fR(3)
+
+\fBzmq_msg_init\fR(3)
+\fBzmq_msg_init_size\fR(3)
+\fBzmq_msg_init_data\fR(3)
 .RE
 .PP
 Sending and receiving a message
 .RS 4
-\fBzmq_msg_send\fR(3)\fBzmq_msg_recv\fR(3)
+
+\fBzmq_msg_send\fR(3)
+\fBzmq_msg_recv\fR(3)
 .RE
 .PP
 Release a message
 .RS 4
+
 \fBzmq_msg_close\fR(3)
 .RE
 .PP
 Access message content
 .RS 4
-\fBzmq_msg_data\fR(3)\fBzmq_msg_size\fR(3)\fBzmq_msg_more\fR(3)
+
+\fBzmq_msg_data\fR(3)
+\fBzmq_msg_size\fR(3)
+\fBzmq_msg_more\fR(3)
 .RE
 .PP
 Work with message properties
 .RS 4
-\fBzmq_msg_gets\fR(3)\fBzmq_msg_get\fR(3)\fBzmq_msg_set\fR(3)
+
+\fBzmq_msg_gets\fR(3)
+\fBzmq_msg_get\fR(3)
+\fBzmq_msg_set\fR(3)
 .RE
 .PP
 Message manipulation
 .RS 4
-\fBzmq_msg_copy\fR(3)\fBzmq_msg_move\fR(3)
+
+\fBzmq_msg_copy\fR(3)
+\fBzmq_msg_move\fR(3)
 .RE
 .SS "Sockets"
 .sp
@@ -124,27 +143,38 @@ The following functions are provided to work with sockets:
 .PP
 Creating a socket
 .RS 4
+
 \fBzmq_socket\fR(3)
 .RE
 .PP
 Closing a socket
 .RS 4
+
 \fBzmq_close\fR(3)
 .RE
 .PP
 Manipulating socket options
 .RS 4
-\fBzmq_getsockopt\fR(3)\fBzmq_setsockopt\fR(3)
+
+\fBzmq_getsockopt\fR(3)
+\fBzmq_setsockopt\fR(3)
 .RE
 .PP
 Establishing a message flow
 .RS 4
-\fBzmq_bind\fR(3)\fBzmq_connect\fR(3)
+
+\fBzmq_bind\fR(3)
+\fBzmq_connect\fR(3)
 .RE
 .PP
 Sending and receiving messages
 .RS 4
-\fBzmq_msg_send\fR(3)\fBzmq_msg_recv\fR(3)\fBzmq_send\fR(3)\fBzmq_recv\fR(3)\fBzmq_send_const\fR(3)
+
+\fBzmq_msg_send\fR(3)
+\fBzmq_msg_recv\fR(3)
+\fBzmq_send\fR(3)
+\fBzmq_recv\fR(3)
+\fBzmq_send_const\fR(3)
 .RE
 .sp
 Monitoring socket events: \fBzmq_socket_monitor\fR(3)
@@ -161,21 +191,25 @@ The following transport mechanisms are provided:
 .PP
 Unicast transport using TCP
 .RS 4
+
 \fBzmq_tcp\fR(7)
 .RE
 .PP
 Reliable multicast transport using PGM
 .RS 4
+
 \fBzmq_pgm\fR(7)
 .RE
 .PP
 Local inter\-process communication transport
 .RS 4
+
 \fBzmq_ipc\fR(7)
 .RE
 .PP
 Local in\-process (inter\-thread) communication transport
 .RS 4
+
 \fBzmq_inproc\fR(7)
 .RE
 .SS "Proxies"
@@ -189,16 +223,19 @@ The following security mechanisms are provided for IPC and TCP connections:
 .PP
 Null security
 .RS 4
+
 \fBzmq_null\fR(7)
 .RE
 .PP
 Plain\-text authentication using username and password
 .RS 4
+
 \fBzmq_plain\fR(7)
 .RE
 .PP
 Elliptic curve authentication and encryption
 .RS 4
+
 \fBzmq_curve\fR(7)
 .RE
 .sp
@@ -220,6 +257,7 @@ The following miscellaneous functions are provided:
 .PP
 Report 0MQ library version
 .RS 4
+
 \fBzmq_version\fR(3)
 .RE
 .SH "LANGUAGE BINDINGS"
