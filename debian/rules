@@ -10,7 +10,7 @@ override_dh_auto_configure:
 	dh_auto_configure -- --with-system-pgm
 
 override_dh_strip:
-	dh_strip --dbg-package=libzmq4-dbg
+	dh_strip --dbg-package=libzmq5-dbg
 
 override_dh_auto_clean:
 	dh_auto_clean
